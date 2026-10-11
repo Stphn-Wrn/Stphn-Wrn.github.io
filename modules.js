@@ -20,4 +20,12 @@ export const GROUPS = [
       en: { title: "Curse of Strahd", intro: "Tools for running the Barovia campaign, whatever the system." },
     },
   },
+  {
+    id: "tools",
+    icon: "fa-toolbox",
+    text: {
+      fr: { title: "Outils de table", intro: "Modules Foundry VTT utilisables avec n'importe quel système." },
+      en: { title: "Table tools", intro: "Foundry VTT modules that work with any system." },
+    },
+  },
 ];
