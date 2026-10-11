@@ -1,21 +1,23 @@
 # Stphn-Wrn.github.io
 
-Page qui regroupe mes modules Foundry VTT et Roll20 : **https://stphn-wrn.github.io**
+[Version française](README.fr.md)
 
-## Ce que montre la page
+A page gathering my Foundry VTT and Roll20 modules: **https://stphn-wrn.github.io**
 
-- Les modules, rangés par groupe (L'Ombre du Seigneur Démon, Curse of Strahd), en français ou en anglais selon la langue du navigateur, avec un bouton FR / EN.
-- Pour chaque module : description, fonctionnalités, captures d'écran facultatives, version actuelle, liens vers le code source et les versions.
-- L'installation propre à chaque plateforme : URL du manifest à copier pour Foundry, boutons de téléchargement des scripts pour Roll20.
+## What the page shows
 
-La liste des modules se met à jour toute seule : à chaque publication, l'action **Deploy site** cherche les dépôts qui portent le topic `courbette-module`, lit leur `site.json` et génère `catalog.json`. Elle tourne à chaque push sur ce dépôt, chaque nuit, et à la demande (onglet Actions, **Run workflow**). La version, la compatibilité Foundry et les fichiers Roll20 sont lus en direct par la page, à chaque visite.
+- The modules, sorted by group (Shadow of the Demon Lord, Curse of Strahd, Table tools), in French or English depending on the browser language, with an FR / EN switch.
+- For each module: description, features, optional screenshots, current version, links to the source code and the releases.
+- Installation for each platform: manifest URL to copy for Foundry, script download buttons for Roll20.
 
-## Ajouter un module
+The module list updates itself: on every publish, the **Deploy site** action looks for the repositories with the `courbette-module` topic, reads their `site.json` and generates `catalog.json`. It runs on every push to this repository, every night, and on demand (Actions tab, **Run workflow**). The version, the Foundry compatibility and the Roll20 files are read live by the page, on every visit.
 
-Dans le dépôt du module :
+## Adding a module
 
-1. Ajouter le topic `courbette-module` (page du dépôt, roue dentée à côté de **About**, champ **Topics**).
-2. Ajouter un fichier `site.json` à la racine, sur la branche par défaut :
+In the module's repository:
+
+1. Add the `courbette-module` topic (repository page, gear next to **About**, **Topics** field).
+2. Add a `site.json` file at the root, on the default branch:
 
 ```json
 {
@@ -30,12 +32,12 @@ Dans le dépôt du module :
 }
 ```
 
-- `group` : l'`id` d'un groupe de `GROUPS` dans `modules.js`.
-- `platform` : `foundry` ou `roll20`.
-- `icon` : une icône Font Awesome (`fa-…`, ou `fa-brands …`).
-- `order` (facultatif) : position dans le groupe, du plus petit au plus grand ; à égalité, ordre alphabétique du dépôt.
-- `manifestFile` (facultatif, Foundry) : nom du manifest s'il ne s'appelle pas `module.json`.
-- `images` (facultatif) : captures affichées en vignettes dans la carte, agrandies au clic. Chaque image a un `src` (chemin dans le dépôt du module, par exemple `docs/clocks.png`, ou URL en `https://`) et un `alt` en `fr` et en `en`, qui sert aussi de légende :
+- `group`: the `id` of a group in `GROUPS` in `modules.js`.
+- `platform`: `foundry` or `roll20`.
+- `icon`: a Font Awesome icon (`fa-…`, or `fa-brands …`).
+- `order` (optional): position in the group, smallest first; on a tie, alphabetical order of the repository.
+- `manifestFile` (optional, Foundry): name of the manifest if it is not `module.json`.
+- `images` (optional): screenshots shown as thumbnails in the card, enlarged on click. Each image has a `src` (a path in the module's repository, for example `docs/clocks.png`, or an `https://` URL) and an `alt` in `fr` and `en`, which is also used as the caption:
 
 ```json
 "images": [
@@ -43,45 +45,45 @@ Dans le dépôt du module :
 ]
 ```
 
-  Les chemins sont lus sur la branche par défaut du dépôt du module. Format conseillé : PNG ou WebP, environ 1280 px de large, en 16:10 (les vignettes sont recadrées à ce format), moins de 300 Ko.
+  Paths are read from the default branch of the module's repository. Recommended format: PNG or WebP, about 1280 px wide, 16:10 (thumbnails are cropped to that ratio), under 300 KB.
 
-Le module apparaît à la publication suivante : au plus tard la nuit suivante, ou tout de suite avec **Run workflow**. Pour changer ses textes, modifier son `site.json`. Pour le retirer, enlever le topic ou archiver le dépôt.
+The module shows up on the next publish: the following night at the latest, or right away with **Run workflow**. To change its texts, edit its `site.json`. To remove it, remove the topic or archive the repository.
 
-Un `site.json` invalide fait échouer la publication avec le nom du dépôt et du champ en cause : le site en ligne reste alors tel quel.
+An invalid `site.json` makes the publish fail with the name of the repository and of the faulty field: the live site then stays as it was.
 
-Selon la plateforme, la page lit :
+Depending on the platform, the page reads:
 
-- **Foundry** : le manifest sur la branche `main` (`version`, `compatibility.minimum`). C'est aussi l'URL proposée à l'installation.
-- **Roll20** : la dernière release GitHub. Chaque fichier `.js` qui y est joint devient un bouton de téléchargement.
+- **Foundry**: the manifest on the `main` branch (`version`, `compatibility.minimum`). It is also the URL offered for installation.
+- **Roll20**: the latest GitHub release. Each `.js` file attached to it becomes a download button.
 
-La section **Installation**, en bas de page, vient de `install-guide.js` : une entrée par plateforme (`steps` et `note`, en `fr` et `en`) ; `**texte**` s'affiche en gras.
+The **Installation** section, at the bottom of the page, comes from `install-guide.js`: one entry per platform (`steps` and `note`, in `fr` and `en`); `**text**` is shown in bold.
 
-Un nouveau groupe s'ajoute dans `GROUPS` (`id`, `icon`, `text.fr` et `text.en` avec `title` et `intro`) ; il apparaît aussi dans la navigation.
+A new group is added in `GROUPS` (`id`, `icon`, `text.fr` and `text.en` with `title` and `intro`); it also appears in the navigation.
 
-## Ajouter une plateforme
+## Adding a platform
 
-Chaque plateforme est une stratégie dans `PLATFORM_STRATEGIES` (`app.js`) :
+Each platform is a strategy in `PLATFORM_STRATEGIES` (`app.js`):
 
-- `icon` : icône du badge de plateforme ;
-- `loadMeta(mod)` : renvoie `{ version, compatibility, ... }` ;
-- `renderInstall(mod, t)` : construit le bloc d'installation de la carte ;
-- `fillInstall(card, meta)` (facultatif) : complète ce bloc une fois les données chargées.
+- `icon`: icon of the platform badge;
+- `loadMeta(mod)`: returns `{ version, compatibility, ... }`;
+- `renderInstall(mod, t)`: builds the card's installation block;
+- `fillInstall(card, meta)` (optional): completes that block once the data has loaded.
 
-Ajouter aussi sa marche à suivre dans `install-guide.js`, son libellé dans `UI.fr` et `UI.en`, sous la même clé que la plateforme, et son nom dans `PLATFORMS` (`tools/catalog.mjs`).
+Also add its steps in `install-guide.js`, its label in `UI.fr` and `UI.en` under the same key as the platform, and its name in `PLATFORMS` (`tools/catalog.mjs`).
 
-## Limites
+## Limits
 
-Les données en direct passent par le navigateur du visiteur. Pour Roll20, la page interroge l'API GitHub, limitée à 60 requêtes par heure et par adresse IP sans connexion. Si la limite est atteinte ou si un dépôt est privé, la carte reste affichée sans version et garde le lien vers la page des versions.
+Live data goes through the visitor's browser. For Roll20, the page queries the GitHub API, limited to 60 requests per hour per IP address without signing in. If the limit is reached or a repository is private, the card is still shown without a version and keeps the link to the releases page.
 
-## Aperçu et mise en ligne
+## Preview and publishing
 
-Site statique, sans build côté page. La page a besoin d'un `catalog.json` (non versionné) : le générer, puis lancer un serveur local.
+A static site, with no build step for the page. The page needs a `catalog.json` (not versioned): generate it, then start a local server.
 
 ```sh
-GITHUB_TOKEN=… node tools/update-catalog.mjs   # le token est facultatif, il évite la limite de l'API
+GITHUB_TOKEN=… node tools/update-catalog.mjs   # the token is optional, it avoids the API limit
 python3 -m http.server 8000
 ```
 
-puis ouvrir http://localhost:8000. Tests du catalogue : `node --test "tests/**/*.test.js"`.
+then open http://localhost:8000. Catalog tests: `node --test "tests/**/*.test.js"`.
 
-La mise en ligne passe par l'action **Deploy site** (réglage **Settings > Pages > Source : GitHub Actions**).
+Publishing goes through the **Deploy site** action (setting **Settings > Pages > Source: GitHub Actions**).
