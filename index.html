@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Modules de Courbette</title>
+    <meta name="description" content="Modules Foundry VTT et Roll20 : L'Ombre du Seigneur Démon et Curse of Strahd." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script type="module" src="app.js"></script>
+  </head>
+  <body>
+    <header class="hero">
+      <div class="container">
+        <div class="hero-top">
+          <span class="brand"><i class="fa-solid fa-dragon" aria-hidden="true"></i> Courbette</span>
+          <div class="lang-switch" role="group" aria-label="Langue / Language">
+            <button type="button" data-lang="fr" aria-pressed="true">FR</button>
+            <button type="button" data-lang="en" aria-pressed="false">EN</button>
+          </div>
+        </div>
+        <h1>Modules</h1>
+        <p class="tagline" data-i18n="tagline"></p>
+        <p class="intro" data-i18n="intro"></p>
+        <div id="nav"></div>
+      </div>
+    </header>
+
+    <main class="container" id="groups"></main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p data-i18n="footer"></p>
+        <a href="https://github.com/Stphn-Wrn" rel="noopener"><i class="fa-brands fa-github" aria-hidden="true"></i> Stphn-Wrn</a>
+      </div>
+    </footer>
+  </body>
+</html>
