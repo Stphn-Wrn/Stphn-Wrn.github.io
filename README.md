@@ -5,7 +5,7 @@ Page qui regroupe mes modules Foundry VTT et Roll20 : **https://stphn-wrn.github
 ## Ce que montre la page
 
 - Les modules, rangés par groupe (L'Ombre du Seigneur Démon, Curse of Strahd), en français ou en anglais selon la langue du navigateur, avec un bouton FR / EN.
-- Pour chaque module : description, fonctionnalités, version actuelle, liens vers le code source et les versions.
+- Pour chaque module : description, fonctionnalités, captures d'écran facultatives, version actuelle, liens vers le code source et les versions.
 - L'installation propre à chaque plateforme : URL du manifest à copier pour Foundry, boutons de téléchargement des scripts pour Roll20.
 
 La liste des modules se met à jour toute seule : à chaque publication, l'action **Deploy site** cherche les dépôts qui portent le topic `courbette-module`, lit leur `site.json` et génère `catalog.json`. Elle tourne à chaque push sur ce dépôt, chaque nuit, et à la demande (onglet Actions, **Run workflow**). La version, la compatibilité Foundry et les fichiers Roll20 sont lus en direct par la page, à chaque visite.
@@ -35,6 +35,15 @@ Dans le dépôt du module :
 - `icon` : une icône Font Awesome (`fa-…`, ou `fa-brands …`).
 - `order` (facultatif) : position dans le groupe, du plus petit au plus grand ; à égalité, ordre alphabétique du dépôt.
 - `manifestFile` (facultatif, Foundry) : nom du manifest s'il ne s'appelle pas `module.json`.
+- `images` (facultatif) : captures affichées en vignettes dans la carte, agrandies au clic. Chaque image a un `src` (chemin dans le dépôt du module, par exemple `docs/clocks.png`, ou URL en `https://`) et un `alt` en `fr` et en `en`, qui sert aussi de légende :
+
+```json
+"images": [
+  { "src": "docs/clocks.png", "alt": { "fr": "Trois horloges ouvertes", "en": "Three open clocks" } }
+]
+```
+
+  Les chemins sont lus sur la branche par défaut du dépôt du module. Format conseillé : PNG ou WebP, environ 1280 px de large, en 16:10 (les vignettes sont recadrées à ce format), moins de 300 Ko.
 
 Le module apparaît à la publication suivante : au plus tard la nuit suivante, ou tout de suite avec **Run workflow**. Pour changer ses textes, modifier son `site.json`. Pour le retirer, enlever le topic ou archiver le dépôt.
 

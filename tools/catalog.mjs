@@ -29,7 +29,40 @@ function checkText(repo, text) {
   }
 }
 
-export function parseDescriptor(repo, descriptor, groups) {
+function resolveImageSrc(repo, field, src, imageBase) {
+  if (!isText(src)) {
+    fail(repo, field, "a non-empty string");
+  }
+  if (src.startsWith("https://")) {
+    return src;
+  }
+  if (src.includes("://") || src.startsWith("/") || src.split("/").includes("..")) {
+    fail(repo, field, "a path inside the repository or an https:// URL");
+  }
+  return `${imageBase}${src}`;
+}
+
+function parseImages(repo, images, imageBase) {
+  if (images === undefined) {
+    return undefined;
+  }
+  if (!Array.isArray(images)) {
+    fail(repo, "images", "a list of { src, alt }");
+  }
+  return images.map((image, index) => {
+    const field = `images[${index}]`;
+    const src = resolveImageSrc(repo, `${field}.src`, image?.src, imageBase);
+    for (const lang of LANGUAGES) {
+      if (!isText(image.alt?.[lang])) {
+        fail(repo, `${field}.alt.${lang}`, "a non-empty string");
+      }
+    }
+    return { src, alt: { fr: image.alt.fr, en: image.alt.en } };
+  });
+}
+
+// imageBase: URL of the repository's raw files, ending with "/"; relative image paths resolve against it.
+export function parseDescriptor(repo, descriptor, groups, { imageBase = "" } = {}) {
   const groupIds = groups.map((group) => group.id);
   if (!groupIds.includes(descriptor.group)) {
     fail(repo, "group", `one of ${groupIds.join(", ")}`);
@@ -47,7 +80,11 @@ export function parseDescriptor(repo, descriptor, groups) {
     fail(repo, "manifestFile", "a file name");
   }
   checkText(repo, descriptor.text);
-  return { repo, ...descriptor };
+  const images = parseImages(repo, descriptor.images, imageBase);
+  if (images === undefined) {
+    return { repo, ...descriptor };
+  }
+  return { repo, ...descriptor, images };
 }
 
 export function buildCatalog(entries, groups) {

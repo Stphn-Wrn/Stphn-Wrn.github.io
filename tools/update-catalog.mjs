@@ -37,8 +37,12 @@ async function listModuleRepos() {
   return repos.filter((repo) => !repo.archived && repo.topics.includes(TOPIC));
 }
 
+function rawBase(repo) {
+  return `https://raw.githubusercontent.com/${OWNER}/${repo.name}/${repo.default_branch}/`;
+}
+
 async function readDescriptor(repo) {
-  const url = `https://raw.githubusercontent.com/${OWNER}/${repo.name}/${repo.default_branch}/site.json`;
+  const url = `${rawBase(repo)}site.json`;
   const response = await fetch(url);
   if (response.status === 404) {
     throw new Error(`${repo.name}: has the ${TOPIC} topic but no site.json on ${repo.default_branch}`);
@@ -56,7 +60,7 @@ async function readDescriptor(repo) {
 async function main() {
   const repos = await listModuleRepos();
   const entries = await Promise.all(
-    repos.map(async (repo) => parseDescriptor(repo.name, await readDescriptor(repo), GROUPS))
+    repos.map(async (repo) => parseDescriptor(repo.name, await readDescriptor(repo), GROUPS, { imageBase: rawBase(repo) }))
   );
   const modules = buildCatalog(entries, GROUPS);
   await writeFile(OUTPUT, `${JSON.stringify({ modules }, null, 2)}\n`);

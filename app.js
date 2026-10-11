@@ -19,6 +19,8 @@ const UI = {
     loading: "Chargement…",
     footer: "Fait par Courbette. Un problème ou une idée ? Ouvrez une issue sur le dépôt du module.",
     catalogError: "Impossible de charger la liste des modules. Réessayez dans un instant.",
+    enlarge: "Agrandir : {alt}",
+    close: "Fermer",
   },
   en: {
     tagline: "Modules and tools for Foundry VTT and Roll20, in English and French.",
@@ -36,6 +38,8 @@ const UI = {
     loading: "Loading…",
     footer: "Made by Courbette. Found a bug or have an idea? Open an issue on the module's repository.",
     catalogError: "The module list could not be loaded. Please try again in a moment.",
+    enlarge: "Enlarge: {alt}",
+    close: "Close",
   },
 };
 
@@ -169,6 +173,60 @@ async function copyToClipboard(text, button, t) {
   }, 1800);
 }
 
+let lightbox = null;
+
+function getLightbox() {
+  if (lightbox) {
+    return lightbox;
+  }
+  const dialog = el("dialog", "lightbox");
+  const close = el("button", "lightbox-close");
+  close.type = "button";
+  close.append(icon("fa-xmark"));
+  close.addEventListener("click", () => dialog.close());
+  const figure = el("figure");
+  figure.append(el("img"), el("figcaption"));
+  dialog.append(close, figure);
+  // Un clic sur le fond (hors de l'image) referme, comme Échap.
+  dialog.addEventListener("click", (event) => {
+    if (event.target === dialog) {
+      dialog.close();
+    }
+  });
+  document.body.append(dialog);
+  lightbox = { dialog, close, img: figure.querySelector("img"), caption: figure.querySelector("figcaption") };
+  return lightbox;
+}
+
+function openLightbox(image, lang) {
+  const box = getLightbox();
+  const alt = image.alt[lang];
+  box.img.src = image.src;
+  box.img.alt = alt;
+  box.caption.textContent = alt;
+  box.close.setAttribute("aria-label", UI[lang].close);
+  box.dialog.showModal();
+}
+
+function createGallery(images, lang) {
+  const gallery = el("div", "gallery");
+  for (const image of images) {
+    const alt = image.alt[lang];
+    const button = el("button", "gallery-item");
+    button.type = "button";
+    button.setAttribute("aria-label", UI[lang].enlarge.replace("{alt}", alt));
+    const thumb = el("img");
+    thumb.src = image.src;
+    thumb.alt = alt;
+    thumb.loading = "lazy";
+    thumb.decoding = "async";
+    button.append(thumb);
+    button.addEventListener("click", () => openLightbox(image, lang));
+    gallery.append(button);
+  }
+  return gallery;
+}
+
 // Factory : construit la carte d'un module à partir de son entrée du catalogue.
 function createModuleCard(mod, lang) {
   const t = UI[lang];
@@ -200,6 +258,10 @@ function createModuleCard(mod, lang) {
       list.append(el("li", null, feature));
     }
     card.append(list);
+  }
+
+  if (mod.images && mod.images.length > 0) {
+    card.append(createGallery(mod.images, lang));
   }
 
   card.append(strategy.renderInstall(mod, t));

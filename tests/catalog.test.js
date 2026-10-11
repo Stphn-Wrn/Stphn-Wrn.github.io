@@ -66,3 +66,33 @@ test("sorts the catalog by group, then order, then repository name", () => {
 test("refuses an empty catalog rather than publishing a page without modules", () => {
   assert.throws(() => buildCatalog([], groups()), /no module/);
 });
+
+test("resolves image paths against the repository's raw files and keeps absolute URLs", () => {
+  const images = [
+    { src: "docs/clocks.png", alt: { fr: "Horloges", en: "Clocks" } },
+    { src: "https://example.com/editor.webp", alt: { fr: "Éditeur", en: "Editor" } }
+  ];
+  const imageBase = "https://raw.githubusercontent.com/Stphn-Wrn/dice-clock/main/";
+
+  const entry = parseDescriptor("dice-clock", descriptor({ images }), groups(), { imageBase });
+
+  assert.deepEqual(entry.images, [
+    { src: "https://raw.githubusercontent.com/Stphn-Wrn/dice-clock/main/docs/clocks.png", alt: { fr: "Horloges", en: "Clocks" } },
+    { src: "https://example.com/editor.webp", alt: { fr: "Éditeur", en: "Editor" } }
+  ]);
+});
+
+test("rejects images the page could not display or describe", () => {
+  const cases = [
+    [descriptor({ images: "docs/clocks.png" }), /dice-clock: images/],
+    [descriptor({ images: [{ alt: { fr: "a", en: "b" } }] }), /dice-clock: images\[0\]\.src/],
+    [descriptor({ images: [{ src: "/docs/clocks.png", alt: { fr: "a", en: "b" } }] }), /dice-clock: images\[0\]\.src/],
+    [descriptor({ images: [{ src: "../secret.png", alt: { fr: "a", en: "b" } }] }), /dice-clock: images\[0\]\.src/],
+    [descriptor({ images: [{ src: "http://example.com/a.png", alt: { fr: "a", en: "b" } }] }), /dice-clock: images\[0\]\.src/],
+    [descriptor({ images: [{ src: "a.png", alt: { fr: "a" } }] }), /dice-clock: images\[0\]\.alt\.en/]
+  ];
+
+  for (const [input, message] of cases) {
+    assert.throws(() => parseDescriptor("dice-clock", input, groups(), { imageBase: "https://x/" }), message);
+  }
+});
