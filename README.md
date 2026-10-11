@@ -8,32 +8,44 @@ Page qui regroupe mes modules Foundry VTT et Roll20 : **https://stphn-wrn.github
 - Pour chaque module : description, fonctionnalités, version actuelle, liens vers le code source et les versions.
 - L'installation propre à chaque plateforme : URL du manifest à copier pour Foundry, boutons de téléchargement des scripts pour Roll20.
 
-La version, la compatibilité Foundry et les fichiers Roll20 sont lus en direct sur GitHub : une nouvelle release apparaît sur la page sans la modifier. Les textes, eux, sont écrits dans `modules.js` et sont à mettre à jour quand les fonctionnalités d'un module changent.
+La liste des modules se met à jour toute seule : à chaque publication, l'action **Deploy site** cherche les dépôts qui portent le topic `courbette-module`, lit leur `site.json` et génère `catalog.json`. Elle tourne à chaque push sur ce dépôt, chaque nuit, et à la demande (onglet Actions, **Run workflow**). La version, la compatibilité Foundry et les fichiers Roll20 sont lus en direct par la page, à chaque visite.
 
 ## Ajouter un module
 
-Ajouter une entrée dans `MODULES`, dans `modules.js` :
+Dans le dépôt du module :
 
-```js
+1. Ajouter le topic `courbette-module` (page du dépôt, roue dentée à côté de **About**, champ **Topics**).
+2. Ajouter un fichier `site.json` à la racine, sur la branche par défaut :
+
+```json
 {
-  repo: "tarokka-reading",       // nom du dépôt sur github.com/Stphn-Wrn
-  group: "strahd",               // id d'un groupe de GROUPS
-  platform: "foundry",           // "foundry" ou "roll20"
-  icon: "fa-diamond",            // icône Font Awesome (fa-brands ... accepté)
-  // manifestFile: "module.json", // Foundry uniquement, si le manifest a un autre nom
-  text: {
-    fr: { title: "…", summary: "…", features: ["…", "…"] },
-    en: { title: "…", summary: "…", features: ["…", "…"] },
-  },
-},
+  "group": "strahd",
+  "platform": "foundry",
+  "icon": "fa-diamond",
+  "order": 30,
+  "text": {
+    "fr": { "title": "…", "summary": "…", "features": ["…", "…"] },
+    "en": { "title": "…", "summary": "…", "features": ["…", "…"] }
+  }
+}
 ```
+
+- `group` : l'`id` d'un groupe de `GROUPS` dans `modules.js`.
+- `platform` : `foundry` ou `roll20`.
+- `icon` : une icône Font Awesome (`fa-…`, ou `fa-brands …`).
+- `order` (facultatif) : position dans le groupe, du plus petit au plus grand ; à égalité, ordre alphabétique du dépôt.
+- `manifestFile` (facultatif, Foundry) : nom du manifest s'il ne s'appelle pas `module.json`.
+
+Le module apparaît à la publication suivante : au plus tard la nuit suivante, ou tout de suite avec **Run workflow**. Pour changer ses textes, modifier son `site.json`. Pour le retirer, enlever le topic ou archiver le dépôt.
+
+Un `site.json` invalide fait échouer la publication avec le nom du dépôt et du champ en cause : le site en ligne reste alors tel quel.
 
 Selon la plateforme, la page lit :
 
 - **Foundry** : le manifest sur la branche `main` (`version`, `compatibility.minimum`). C'est aussi l'URL proposée à l'installation.
 - **Roll20** : la dernière release GitHub. Chaque fichier `.js` qui y est joint devient un bouton de téléchargement.
 
-Un nouveau groupe s'ajoute de la même façon dans `GROUPS` (`id`, `icon`, `text.fr` et `text.en` avec `title` et `intro`) ; il apparaît aussi dans la navigation.
+Un nouveau groupe s'ajoute dans `GROUPS` (`id`, `icon`, `text.fr` et `text.en` avec `title` et `intro`) ; il apparaît aussi dans la navigation.
 
 ## Ajouter une plateforme
 
@@ -44,7 +56,7 @@ Chaque plateforme est une stratégie dans `PLATFORM_STRATEGIES` (`app.js`) :
 - `renderInstall(mod, t)` : construit le bloc d'installation de la carte ;
 - `fillInstall(card, meta)` (facultatif) : complète ce bloc une fois les données chargées.
 
-Ajouter aussi son libellé dans `UI.fr` et `UI.en`, sous la même clé que la plateforme.
+Ajouter aussi son libellé dans `UI.fr` et `UI.en`, sous la même clé que la plateforme, et son nom dans `PLATFORMS` (`tools/catalog.mjs`).
 
 ## Limites
 
@@ -52,10 +64,13 @@ Les données en direct passent par le navigateur du visiteur. Pour Roll20, la pa
 
 ## Aperçu et mise en ligne
 
-Site statique, sans build ni dépendance :
+Site statique, sans build côté page. La page a besoin d'un `catalog.json` (non versionné) : le générer, puis lancer un serveur local.
 
 ```sh
+GITHUB_TOKEN=… node tools/update-catalog.mjs   # le token est facultatif, il évite la limite de l'API
 python3 -m http.server 8000
 ```
 
-puis ouvrir http://localhost:8000. Un push sur `main` met le site en ligne via GitHub Pages en une minute environ (`.nojekyll` désactive le traitement Jekyll).
+puis ouvrir http://localhost:8000. Tests du catalogue : `node --test "tests/**/*.test.js"`.
+
+La mise en ligne passe par l'action **Deploy site** (réglage **Settings > Pages > Source : GitHub Actions**).

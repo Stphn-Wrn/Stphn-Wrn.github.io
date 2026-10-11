@@ -1,4 +1,4 @@
-import { OWNER, GROUPS, MODULES } from "./modules.js";
+import { OWNER, GROUPS } from "./modules.js";
 
 const LANG_KEY = "modules-page-lang";
 
@@ -18,6 +18,7 @@ const UI = {
     latest: "Dernière version",
     loading: "Chargement…",
     footer: "Fait par Courbette. Un problème ou une idée ? Ouvrez une issue sur le dépôt du module.",
+    catalogError: "Impossible de charger la liste des modules. Réessayez dans un instant.",
   },
   en: {
     tagline: "Modules and tools for Foundry VTT and Roll20, in English and French.",
@@ -34,6 +35,7 @@ const UI = {
     latest: "Latest version",
     loading: "Loading…",
     footer: "Made by Courbette. Found a bug or have an idea? Open an issue on the module's repository.",
+    catalogError: "The module list could not be loaded. Please try again in a moment.",
   },
 };
 
@@ -228,6 +230,20 @@ function createModuleCard(mod, lang) {
   return card;
 }
 
+let MODULES = [];
+let catalogLoaded = false;
+
+// catalog.json is generated at deploy time from each repository's site.json.
+async function loadCatalog() {
+  try {
+    const catalog = await fetchJson("catalog.json");
+    MODULES = catalog.modules;
+    catalogLoaded = true;
+  } catch {
+    MODULES = [];
+  }
+}
+
 function createGroupSection(group, lang) {
   const text = group.text[lang];
   const section = el("section", "group");
@@ -294,6 +310,11 @@ function render(lang) {
     button.setAttribute("aria-pressed", String(button.dataset.lang === lang));
   }
 
+  if (!catalogLoaded) {
+    document.querySelector("#nav").replaceChildren();
+    document.querySelector("#groups").replaceChildren(el("p", "catalog-error", t.catalogError));
+    return;
+  }
   document.querySelector("#nav").replaceChildren(createNav(lang));
   document.querySelector("#groups").replaceChildren(...GROUPS.map((group) => createGroupSection(group, lang)));
 }
@@ -305,4 +326,5 @@ for (const button of document.querySelectorAll("[data-lang]")) {
   });
 }
 
+await loadCatalog();
 render(initialLang());

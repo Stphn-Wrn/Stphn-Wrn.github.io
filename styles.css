@@ -364,3 +364,12 @@ h1 {
     padding: 16px;
   }
 }
+
+.catalog-error {
+  margin: 3rem 0;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--muted);
+}
