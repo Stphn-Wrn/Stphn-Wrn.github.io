@@ -166,18 +166,20 @@ export const MODULES = [
     text: {
       fr: {
         title: "Curse of Strahd: Reloaded pour Roll20",
-        summary: "Script Mod (API) Roll20 qui importe le guide en handouts reliés.",
+        summary: "Script Mod (API) Roll20 qui importe le guide en handouts reliés, dans l'ordre du guide.",
         features: [
-          "Même conversion que la version Foundry",
+          "Un handout par section, et par pièce quand le guide y renvoie",
+          "Tous les liens internes fonctionnent, avec sommaires et liens de retour",
           "Script prêt à l'emploi en anglais ou en français",
           "Nécessite Roll20 Pro",
         ],
       },
       en: {
         title: "Curse of Strahd: Reloaded for Roll20",
-        summary: "Roll20 Mod (API) script that imports the guide into linked handouts.",
+        summary: "Roll20 Mod (API) script that imports the guide into linked handouts, in the guide's order.",
         features: [
-          "Same conversion as the Foundry version",
+          "One handout per section, and per room where the guide links to it",
+          "Every internal link works, with contents lists and back links",
           "Ready-made script in English or French",
           "Requires Roll20 Pro",
         ],
