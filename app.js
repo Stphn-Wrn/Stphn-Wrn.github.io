@@ -1,11 +1,15 @@
 import { OWNER, GROUPS } from "./modules.js";
+import { INSTALL_GUIDE } from "./install-guide.js";
 
 const LANG_KEY = "modules-page-lang";
 
 const UI = {
   fr: {
     tagline: "Modules et outils pour Foundry VTT et Roll20, en français et en anglais.",
-    intro: "Tout est gratuit et open source. Pour installer un module Foundry, copiez l'URL de son manifest dans Foundry : Modules, Installer un module, puis Manifest.",
+    intro: "Tout est gratuit et open source. Chaque carte donne de quoi installer le module ; la marche à suivre est détaillée plus bas.",
+    installTitle: "Installation",
+    installIntro: "Pas besoin d'aller sur GitHub : tout ce qu'il faut est sur cette page.",
+    howToInstall: "Comment installer ?",
     manifest: "URL du manifest",
     copy: "Copier",
     copied: "Copié",
@@ -21,10 +25,15 @@ const UI = {
     catalogError: "Impossible de charger la liste des modules. Réessayez dans un instant.",
     enlarge: "Agrandir : {alt}",
     close: "Fermer",
+    previous: "Image précédente",
+    next: "Image suivante",
   },
   en: {
     tagline: "Modules and tools for Foundry VTT and Roll20, in English and French.",
-    intro: "Everything is free and open source. To install a Foundry module, paste its manifest URL in Foundry: Add-on Modules, Install Module, then Manifest URL.",
+    intro: "Everything is free and open source. Each card has what you need to install the module; the steps are below.",
+    installTitle: "Installation",
+    installIntro: "No need to visit GitHub: everything you need is on this page.",
+    howToInstall: "How to install?",
     manifest: "Manifest URL",
     copy: "Copy",
     copied: "Copied",
@@ -40,6 +49,8 @@ const UI = {
     catalogError: "The module list could not be loaded. Please try again in a moment.",
     enlarge: "Enlarge: {alt}",
     close: "Close",
+    previous: "Previous image",
+    next: "Next image",
   },
 };
 
@@ -68,7 +79,7 @@ const PLATFORM_STRATEGIES = {
     renderInstall(mod, t) {
       const url = this.manifestUrl(mod);
       const box = el("div", "install");
-      box.append(el("span", "install-label", t.manifest));
+      box.append(installLabel(t.manifest, t));
       const row = el("div", "install-row");
       const code = el("code", "install-url", url);
       const button = el("button", "copy-button");
@@ -89,7 +100,7 @@ const PLATFORM_STRATEGIES = {
     },
     renderInstall(mod, t) {
       const box = el("div", "install");
-      box.append(el("span", "install-label", t.download));
+      box.append(installLabel(t.download, t));
       const row = el("div", "install-row install-downloads");
       row.append(linkButton(`${repoUrl(mod)}/releases/latest`, "fa-download", t.releases));
       box.append(row);
@@ -106,6 +117,14 @@ const PLATFORM_STRATEGIES = {
     },
   },
 };
+
+function installLabel(text, t) {
+  const row = el("div", "install-head");
+  const help = el("a", "install-help", t.howToInstall);
+  help.href = "#installation";
+  row.append(el("span", "install-label", text), help);
+  return row;
+}
 
 const metaCache = new Map();
 
@@ -173,6 +192,18 @@ async function copyToClipboard(text, button, t) {
   }, 1800);
 }
 
+function wrapIndex(index, length) {
+  return (index + length) % length;
+}
+
+function navButton(className, iconName, label) {
+  const button = el("button", className);
+  button.type = "button";
+  button.setAttribute("aria-label", label);
+  button.append(icon(iconName));
+  return button;
+}
+
 let lightbox = null;
 
 function getLightbox() {
@@ -180,13 +211,28 @@ function getLightbox() {
     return lightbox;
   }
   const dialog = el("dialog", "lightbox");
-  const close = el("button", "lightbox-close");
-  close.type = "button";
-  close.append(icon("fa-xmark"));
-  close.addEventListener("click", () => dialog.close());
+  const close = navButton("lightbox-close", "fa-xmark", "");
+  const prev = navButton("lightbox-nav lightbox-prev", "fa-chevron-left", "");
+  const next = navButton("lightbox-nav lightbox-next", "fa-chevron-right", "");
   const figure = el("figure");
-  figure.append(el("img"), el("figcaption"));
-  dialog.append(close, figure);
+  const img = el("img");
+  const caption = el("figcaption");
+  figure.append(img, caption);
+  dialog.append(figure, prev, next, close);
+
+  lightbox = { dialog, close, prev, next, img, caption, images: [], index: 0, lang: "fr" };
+
+  close.addEventListener("click", () => dialog.close());
+  prev.addEventListener("click", () => showInLightbox(lightbox.index - 1));
+  next.addEventListener("click", () => showInLightbox(lightbox.index + 1));
+  dialog.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowLeft") {
+      showInLightbox(lightbox.index - 1);
+    }
+    if (event.key === "ArrowRight") {
+      showInLightbox(lightbox.index + 1);
+    }
+  });
   // Un clic sur le fond (hors de l'image) referme, comme Échap.
   dialog.addEventListener("click", (event) => {
     if (event.target === dialog) {
@@ -194,36 +240,85 @@ function getLightbox() {
     }
   });
   document.body.append(dialog);
-  lightbox = { dialog, close, img: figure.querySelector("img"), caption: figure.querySelector("figcaption") };
   return lightbox;
 }
 
-function openLightbox(image, lang) {
+function showInLightbox(index) {
   const box = getLightbox();
-  const alt = image.alt[lang];
+  box.index = wrapIndex(index, box.images.length);
+  const image = box.images[box.index];
+  const alt = image.alt[box.lang];
   box.img.src = image.src;
   box.img.alt = alt;
-  box.caption.textContent = alt;
-  box.close.setAttribute("aria-label", UI[lang].close);
+  let caption = alt;
+  if (box.images.length > 1) {
+    caption = `${box.index + 1} / ${box.images.length} · ${alt}`;
+  }
+  box.caption.textContent = caption;
+}
+
+function openLightbox(images, index, lang) {
+  const box = getLightbox();
+  const t = UI[lang];
+  box.images = images;
+  box.lang = lang;
+  box.close.setAttribute("aria-label", t.close);
+  box.prev.setAttribute("aria-label", t.previous);
+  box.next.setAttribute("aria-label", t.next);
+  box.prev.hidden = images.length < 2;
+  box.next.hidden = images.length < 2;
+  showInLightbox(index);
   box.dialog.showModal();
 }
 
+// Une image à la fois, en pleine largeur ; flèches et points quand il y en a plusieurs.
 function createGallery(images, lang) {
+  const t = UI[lang];
   const gallery = el("div", "gallery");
-  for (const image of images) {
-    const alt = image.alt[lang];
-    const button = el("button", "gallery-item");
-    button.type = "button";
-    button.setAttribute("aria-label", UI[lang].enlarge.replace("{alt}", alt));
-    const thumb = el("img");
-    thumb.src = image.src;
-    thumb.alt = alt;
-    thumb.loading = "lazy";
-    thumb.decoding = "async";
-    button.append(thumb);
-    button.addEventListener("click", () => openLightbox(image, lang));
-    gallery.append(button);
+  const stage = el("div", "gallery-stage");
+  const open = el("button", "gallery-open");
+  open.type = "button";
+  const img = el("img");
+  img.loading = "lazy";
+  img.decoding = "async";
+  open.append(img);
+  stage.append(open);
+  gallery.append(stage);
+
+  let index = 0;
+  const dots = [];
+
+  function show(newIndex) {
+    index = wrapIndex(newIndex, images.length);
+    const alt = images[index].alt[lang];
+    img.src = images[index].src;
+    img.alt = alt;
+    open.setAttribute("aria-label", t.enlarge.replace("{alt}", alt));
+    dots.forEach((dot, dotIndex) => {
+      dot.setAttribute("aria-current", String(dotIndex === index));
+    });
   }
+
+  open.addEventListener("click", () => openLightbox(images, index, lang));
+
+  if (images.length > 1) {
+    const prev = navButton("gallery-nav gallery-prev", "fa-chevron-left", t.previous);
+    const next = navButton("gallery-nav gallery-next", "fa-chevron-right", t.next);
+    prev.addEventListener("click", () => show(index - 1));
+    next.addEventListener("click", () => show(index + 1));
+    stage.append(prev, next);
+
+    const dotRow = el("div", "gallery-dots");
+    images.forEach((image, dotIndex) => {
+      const dot = navButton("gallery-dot", "fa-circle", image.alt[lang]);
+      dot.addEventListener("click", () => show(dotIndex));
+      dots.push(dot);
+      dotRow.append(dot);
+    });
+    gallery.append(dotRow);
+  }
+
+  show(0);
   return gallery;
 }
 
@@ -331,7 +426,55 @@ function createNav(lang) {
     link.href = `#${group.id}`;
     nav.append(link);
   }
+  const install = el("a", "nav-install");
+  install.href = "#installation";
+  install.append(icon("fa-download"), el("span", null, UI[lang].installTitle));
+  nav.append(install);
   return nav;
+}
+
+// "**Copier**" devient <strong>Copier</strong> ; le reste reste du texte.
+function richText(tag, text) {
+  const node = el(tag);
+  text.split("**").forEach((part, index) => {
+    if (index % 2 === 1) {
+      node.append(el("strong", null, part));
+      return;
+    }
+    node.append(part);
+  });
+  return node;
+}
+
+function createInstallGuide(lang) {
+  const t = UI[lang];
+  const section = el("section", "group install-guide");
+  section.id = "installation";
+  const head = el("div", "group-head");
+  const title = el("h2");
+  title.append(icon("fa-download"), el("span", null, t.installTitle));
+  head.append(title, el("p", null, t.installIntro));
+  section.append(head);
+
+  const grid = el("div", "guide-grid");
+  for (const [platform, guide] of Object.entries(INSTALL_GUIDE)) {
+    const text = guide[lang];
+    const card = el("article", "guide-card");
+    const heading = el("h3");
+    heading.append(icon(PLATFORM_STRATEGIES[platform].icon), el("span", null, t[platform]));
+    const steps = el("ol", "guide-steps");
+    for (const step of text.steps) {
+      const item = el("li");
+      item.append(richText("span", step));
+      steps.append(item);
+    }
+    const note = richText("p", text.note);
+    note.className = "guide-note";
+    card.append(heading, steps, note);
+    grid.append(card);
+  }
+  section.append(grid);
+  return section;
 }
 
 function readStoredLang() {
@@ -378,7 +521,10 @@ function render(lang) {
     return;
   }
   document.querySelector("#nav").replaceChildren(createNav(lang));
-  document.querySelector("#groups").replaceChildren(...GROUPS.map((group) => createGroupSection(group, lang)));
+  document.querySelector("#groups").replaceChildren(
+    ...GROUPS.map((group) => createGroupSection(group, lang)),
+    createInstallGuide(lang),
+  );
 }
 
 for (const button of document.querySelectorAll("[data-lang]")) {

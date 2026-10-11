@@ -1,4 +1,5 @@
 :root {
+  color-scheme: light dark;
   --bg: #f6f2ea;
   --surface: #fffdf8;
   --surface-alt: #efe8dc;
@@ -154,6 +155,14 @@ h1 {
   border-color: #e0756b;
 }
 
+.group-nav .nav-install {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgb(224 117 107 / 18%);
+  border-color: rgb(224 117 107 / 45%);
+}
+
 /* Sections */
 
 .group {
@@ -259,46 +268,107 @@ h1 {
 
 .gallery {
   display: flex;
+  flex-direction: column;
   gap: 8px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  padding-bottom: 4px;
 }
 
-.gallery-item {
-  flex: none;
-  width: min(220px, 70%);
+.gallery-stage {
+  position: relative;
+}
+
+.gallery-open {
+  display: block;
+  width: 100%;
   aspect-ratio: 16 / 10;
   padding: 0;
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  border: 0;
+  border-radius: 10px;
   overflow: hidden;
   background: var(--surface-alt);
   cursor: zoom-in;
-  scroll-snap-align: start;
 }
 
-.gallery-item:only-child {
-  width: 100%;
-}
-
-.gallery-item img {
+.gallery-open img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: top center;
-  transition: transform 0.2s ease;
 }
 
-.gallery-item:hover img,
-.gallery-item:focus-visible img {
-  transform: scale(1.03);
-}
-
-.gallery-item:focus-visible {
+.gallery-open:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+.gallery-nav,
+.lightbox-nav,
+.lightbox-close {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgb(10 8 8 / 65%);
+  color: #fff;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s ease, opacity 0.15s ease;
+}
+
+.gallery-nav:hover,
+.lightbox-nav:hover,
+.lightbox-close:hover {
+  background: var(--accent);
+}
+
+.gallery-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0;
+}
+
+.gallery-prev {
+  left: 8px;
+}
+
+.gallery-next {
+  right: 8px;
+}
+
+.gallery-stage:hover .gallery-nav,
+.gallery-nav:focus-visible {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .gallery-nav {
+    opacity: 1;
+  }
+}
+
+.gallery-dots {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+}
+
+.gallery-dot {
+  padding: 4px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  opacity: 0.45;
+  font-size: 0.5rem;
+  cursor: pointer;
+}
+
+.gallery-dot[aria-current="true"] {
+  color: var(--accent);
+  opacity: 1;
 }
 
 .lightbox {
@@ -312,7 +382,7 @@ h1 {
 }
 
 .lightbox::backdrop {
-  background: rgb(10 8 8 / 80%);
+  background: rgb(10 8 8 / 85%);
 }
 
 .lightbox figure {
@@ -324,7 +394,6 @@ h1 {
   max-width: 100%;
   max-height: calc(100vh - 100px);
   margin: 0 auto;
-  border-radius: 12px 12px 0 0;
 }
 
 .lightbox figcaption {
@@ -337,18 +406,26 @@ h1 {
   position: absolute;
   top: 10px;
   right: 10px;
-  width: 36px;
-  height: 36px;
-  border: 0;
-  border-radius: 50%;
-  background: rgb(10 8 8 / 70%);
-  color: #fff;
-  font-size: 1rem;
-  cursor: pointer;
 }
 
-.lightbox-close:hover {
-  background: var(--accent);
+.lightbox-nav {
+  position: absolute;
+  top: calc(50% - 20px);
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+}
+
+.lightbox-prev {
+  left: 10px;
+}
+
+.lightbox-next {
+  right: 10px;
+}
+
+.lightbox-nav[hidden] {
+  display: none;
 }
 
 .install {
@@ -356,6 +433,22 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+.install-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.install-help {
+  font-size: 0.8rem;
+  text-decoration: none;
+}
+
+.install-help:hover {
+  text-decoration: underline;
 }
 
 .install-label {
@@ -425,6 +518,73 @@ h1 {
   flex-wrap: wrap;
   border-top: 1px solid var(--border);
   padding-top: 14px;
+}
+
+/* Installation */
+
+.guide-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr));
+  gap: 20px;
+}
+
+.guide-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  padding: 20px;
+}
+
+.guide-card h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 14px;
+  font-size: 1.1rem;
+}
+
+.guide-card h3 i {
+  color: var(--accent);
+}
+
+.guide-steps {
+  counter-reset: step;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.guide-steps li {
+  counter-increment: step;
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.guide-steps li::before {
+  content: counter(step);
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.guide-note {
+  margin: 16px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.9rem;
 }
 
 /* Pied de page */

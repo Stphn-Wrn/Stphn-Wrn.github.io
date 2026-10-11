@@ -54,6 +54,8 @@ Selon la plateforme, la page lit :
 - **Foundry** : le manifest sur la branche `main` (`version`, `compatibility.minimum`). C'est aussi l'URL proposée à l'installation.
 - **Roll20** : la dernière release GitHub. Chaque fichier `.js` qui y est joint devient un bouton de téléchargement.
 
+La section **Installation**, en bas de page, vient de `install-guide.js` : une entrée par plateforme (`steps` et `note`, en `fr` et `en`) ; `**texte**` s'affiche en gras.
+
 Un nouveau groupe s'ajoute dans `GROUPS` (`id`, `icon`, `text.fr` et `text.en` avec `title` et `intro`) ; il apparaît aussi dans la navigation.
 
 ## Ajouter une plateforme
@@ -65,7 +67,7 @@ Chaque plateforme est une stratégie dans `PLATFORM_STRATEGIES` (`app.js`) :
 - `renderInstall(mod, t)` : construit le bloc d'installation de la carte ;
 - `fillInstall(card, meta)` (facultatif) : complète ce bloc une fois les données chargées.
 
-Ajouter aussi son libellé dans `UI.fr` et `UI.en`, sous la même clé que la plateforme, et son nom dans `PLATFORMS` (`tools/catalog.mjs`).
+Ajouter aussi sa marche à suivre dans `install-guide.js`, son libellé dans `UI.fr` et `UI.en`, sous la même clé que la plateforme, et son nom dans `PLATFORMS` (`tools/catalog.mjs`).
 
 ## Limites
 
