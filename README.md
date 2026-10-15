@@ -53,7 +53,7 @@ An invalid `site.json` makes the publish fail with the name of the repository an
 
 Depending on the platform, the page reads:
 
-- **Foundry**: the manifest on the `main` branch (`version`, `compatibility.minimum`). It is also the URL offered for installation.
+- **Foundry**: the manifest on the `main` branch (`version`, `compatibility.minimum`, `relationships.requires`). It is also the URL offered for installation. The modules listed in `relationships.requires` show in a **Requires** block on the card, with their minimum version if given; one that has a card on the page links to it.
 - **Roll20**: the latest GitHub release. Each `.js` file attached to it becomes a download button.
 
 The **Installation** section, at the bottom of the page, comes from `install-guide.js`: one entry per platform (`steps` and `note`, in `fr` and `en`); `**text**` is shown in bold.

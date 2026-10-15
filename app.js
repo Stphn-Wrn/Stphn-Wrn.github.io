@@ -1,5 +1,6 @@
 import { OWNER, GROUPS } from "./modules.js";
 import { INSTALL_GUIDE } from "./install-guide.js";
+import { describeDependencies, requiredModules } from "./dependencies.js";
 
 const LANG_KEY = "modules-page-lang";
 
@@ -27,6 +28,8 @@ const UI = {
     close: "Fermer",
     previous: "Image précédente",
     next: "Image suivante",
+    requires: "Nécessite",
+    requiresHint: "Ce module ne fonctionne qu'avec ces modules installés et activés dans le monde.",
   },
   en: {
     tagline: "Modules and tools for Foundry VTT and Roll20, in English and French.",
@@ -51,6 +54,8 @@ const UI = {
     close: "Close",
     previous: "Previous image",
     next: "Next image",
+    requires: "Requires",
+    requiresHint: "This module only works with these modules installed and enabled in the world.",
   },
 };
 
@@ -74,7 +79,7 @@ const PLATFORM_STRATEGIES = {
       if (compat.minimum) {
         compatibility = `v${Math.floor(Number(compat.minimum))}+`;
       }
-      return { version: manifest.version, compatibility };
+      return { version: manifest.version, compatibility, requires: requiredModules(manifest) };
     },
     renderInstall(mod, t) {
       const url = this.manifestUrl(mod);
@@ -322,6 +327,36 @@ function createGallery(images, lang) {
   return gallery;
 }
 
+// The modules this one cannot work without, read from its manifest; hidden when there are none.
+function createDependencies(t) {
+  const box = el("div", "deps");
+  box.hidden = true;
+  const label = el("span", "install-label", t.requires);
+  label.title = t.requiresHint;
+  box.append(label, el("div", "deps-list"));
+  return box;
+}
+
+function fillDependencies(box, requires, lang) {
+  const dependencies = describeDependencies(requires ?? [], MODULES, lang);
+  if (dependencies.length === 0) {
+    return;
+  }
+  box.querySelector(".deps-list").replaceChildren(...dependencies.map((dependency) => {
+    let chip = el("span", "dep");
+    if (dependency.href) {
+      chip = el("a", "dep");
+      chip.href = dependency.href;
+    }
+    chip.append(icon("fa-puzzle-piece"), el("span", null, dependency.title));
+    if (dependency.minimum) {
+      chip.append(el("span", "dep-version", `v${dependency.minimum}+`));
+    }
+    return chip;
+  }));
+  box.hidden = false;
+}
+
 // Factory : construit la carte d'un module à partir de son entrée du catalogue.
 function createModuleCard(mod, lang) {
   const t = UI[lang];
@@ -359,7 +394,8 @@ function createModuleCard(mod, lang) {
     card.append(createGallery(mod.images, lang));
   }
 
-  card.append(strategy.renderInstall(mod, t));
+  const dependencies = createDependencies(t);
+  card.append(dependencies, strategy.renderInstall(mod, t));
 
   const links = el("footer", "card-links");
   links.append(
@@ -379,6 +415,7 @@ function createModuleCard(mod, lang) {
     }
     versionTag.textContent = label;
     versionTag.title = t.latest;
+    fillDependencies(dependencies, meta.requires, lang);
     if (strategy.fillInstall) {
       strategy.fillInstall(card, meta);
     }

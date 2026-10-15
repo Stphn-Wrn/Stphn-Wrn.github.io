@@ -428,6 +428,55 @@ h1 {
   display: none;
 }
 
+/* Modules required by this one, just above its installation block. */
+.deps {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.deps[hidden] {
+  display: none;
+}
+
+.deps:not([hidden]) + .install {
+  margin-top: 0;
+}
+
+.deps-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.dep {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-alt);
+  color: var(--text);
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
+a.dep:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.dep .fa-puzzle-piece {
+  color: var(--accent);
+}
+
+.dep-version {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
 .install {
   margin-top: auto;
   display: flex;
